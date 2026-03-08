@@ -13,7 +13,6 @@ function App() {
   const [videoFile, setVideoFile] = useState(null);
   const [videoUrl, setVideoUrl] = useState("");
   const [videoDuration, setVideoDuration] = useState(0);
-
   const [totalShorts, setTotalShorts] = useState(3);
   const [secondsPerShort, setSecondsPerShort] = useState(30);
 
@@ -21,7 +20,6 @@ function App() {
   const [progress, setProgress] = useState(0);
   const [generatedVideos, setGeneratedVideos] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-
   const estimatedTotalDuration = useMemo(
     () => totalShorts * secondsPerShort,
     [totalShorts, secondsPerShort]
