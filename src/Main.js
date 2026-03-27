@@ -3,6 +3,44 @@ import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile } from "@ffmpeg/util";
 import "./App.css";
 
+const RATIO_PRESETS = [
+  {
+    id: "original",
+    label: "Original",
+    icon: "▣",
+    description: "No crop",
+    ratio: null,
+  },
+  {
+    id: "9:16",
+    label: "9:16",
+    icon: "▯",
+    description: "TikTok / YT Shorts / Reels",
+    ratio: [9, 16],
+  },
+  {
+    id: "1:1",
+    label: "1:1",
+    icon: "■",
+    description: "Instagram / Twitter",
+    ratio: [1, 1],
+  },
+  {
+    id: "4:5",
+    label: "4:5",
+    icon: "▮",
+    description: "Instagram Portrait",
+    ratio: [4, 5],
+  },
+  {
+    id: "16:9",
+    label: "16:9",
+    icon: "▬",
+    description: "YouTube / Landscape",
+    ratio: [16, 9],
+  },
+];
+
 function App() {
   const ffmpegRef = useRef(null);
   const videoBlobUrlsRef = useRef([]);
@@ -13,17 +51,22 @@ function App() {
   const [videoFile, setVideoFile] = useState(null);
   const [videoUrl, setVideoUrl] = useState("");
   const [videoDuration, setVideoDuration] = useState(0);
+  const [videoDimensions, setVideoDimensions] = useState({ w: 0, h: 0 });
   const [totalShorts, setTotalShorts] = useState(3);
   const [secondsPerShort, setSecondsPerShort] = useState(30);
+  const [selectedRatio, setSelectedRatio] = useState("original");
 
   const [isCutting, setIsCutting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [generatedVideos, setGeneratedVideos] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+
   const estimatedTotalDuration = useMemo(
     () => totalShorts * secondsPerShort,
     [totalShorts, secondsPerShort]
   );
+
+  const selectedPreset = RATIO_PRESETS.find((p) => p.id === selectedRatio);
 
   useEffect(() => {
     let mounted = true;
@@ -96,17 +139,20 @@ function App() {
 
   const handleVideoSelect = (e) => {
     const file = e.target.files?.[0] || null;
-
     clearGeneratedVideos();
     setProgress(0);
     setIsCutting(false);
     setErrorMessage("");
     setVideoFile(file);
+    setVideoDimensions({ w: 0, h: 0 });
   };
 
   const handleLoadedMetadata = (e) => {
     const duration = e.currentTarget.duration || 0;
+    const w = e.currentTarget.videoWidth || 0;
+    const h = e.currentTarget.videoHeight || 0;
     setVideoDuration(duration);
+    setVideoDimensions({ w, h });
   };
 
   const formatSeconds = (value) => {
@@ -114,6 +160,33 @@ function App() {
     const mins = Math.floor(total / 60);
     const secs = total % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const buildCropFilter = (preset, videoW, videoH) => {
+    if (!preset || !preset.ratio) return null;
+    const [rw, rh] = preset.ratio;
+    const targetRatio = rw / rh;
+    const srcRatio = videoW / videoH;
+
+    let cropW, cropH;
+    if (srcRatio > targetRatio) {
+      // Source is wider than target → crop sides
+      cropH = videoH;
+      cropW = Math.floor(videoH * targetRatio);
+    } else {
+      // Source is taller than target → crop top/bottom
+      cropW = videoW;
+      cropH = Math.floor(videoW / targetRatio);
+    }
+
+    // Make dimensions even (required by libx264)
+    cropW = cropW % 2 === 0 ? cropW : cropW - 1;
+    cropH = cropH % 2 === 0 ? cropH : cropH - 1;
+
+    const x = Math.floor((videoW - cropW) / 2);
+    const y = Math.floor((videoH - cropH) / 2);
+
+    return `crop=${cropW}:${cropH}:${x}:${y}`;
   };
 
   const handleGenerateShorts = async () => {
@@ -138,6 +211,11 @@ function App() {
 
     const inputName = `input.${safeExtension}`;
 
+    // Use actual video dimensions captured on metadata load
+    const videoW = videoDimensions.w || 1920;
+    const videoH = videoDimensions.h || 1080;
+    const cropFilter = buildCropFilter(selectedPreset, videoW, videoH);
+
     try {
       await ffmpeg.writeFile(inputName, await fetchFile(videoFile));
 
@@ -157,19 +235,31 @@ function App() {
 
         const outputName = `output_${i + 1}.mp4`;
 
-        await ffmpeg.exec([
-          "-ss",
-          String(startTime),
-          "-i",
-          inputName,
-          "-t",
-          String(actualDuration),
-          "-map",
-          "0",
-          "-c",
-          "copy",
-          outputName,
-        ]);
+        // If no crop needed, use stream copy (fast). If crop needed, must re-encode.
+        let ffmpegArgs;
+        if (!cropFilter) {
+          ffmpegArgs = [
+            "-ss", String(startTime),
+            "-i", inputName,
+            "-t", String(actualDuration),
+            "-map", "0",
+            "-c", "copy",
+            outputName,
+          ];
+        } else {
+          ffmpegArgs = [
+            "-ss", String(startTime),
+            "-i", inputName,
+            "-t", String(actualDuration),
+            "-vf", cropFilter,
+            "-c:v", "libx264",
+            "-preset", "ultrafast",
+            "-c:a", "aac",
+            outputName,
+          ];
+        }
+
+        await ffmpeg.exec(ffmpegArgs);
 
         const data = await ffmpeg.readFile(outputName);
         const blob = new Blob([data.buffer], { type: "video/mp4" });
@@ -177,9 +267,11 @@ function App() {
 
         videoBlobUrlsRef.current.push(clipUrl);
 
+        const ratioSuffix = selectedRatio !== "original" ? `-${selectedRatio.replace(":", "x")}` : "";
+
         clips.push({
           id: i + 1,
-          name: `${videoFile.name.replace(/\.[^/.]+$/, "")}-short-${i + 1}.mp4`,
+          name: `${videoFile.name.replace(/\.[^/.]+$/, "")}-short-${i + 1}${ratioSuffix}.mp4`,
           url: clipUrl,
           startTime,
           duration: actualDuration,
@@ -196,7 +288,7 @@ function App() {
       } catch {}
     } catch (error) {
       console.error(error);
-      setErrorMessage("Failed to cut video.");
+      setErrorMessage("Failed to cut video. If you selected a ratio, the video may need to be re-encoded which takes longer.");
       try {
         await ffmpeg.deleteFile(inputName);
       } catch {}
@@ -218,12 +310,13 @@ function App() {
                 Create short videos from one long video
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-                Upload a long video, choose how many shorts you want, and set
-                the duration for each short clip.
+                Upload a long video, choose how many shorts you want, set the
+                duration, and pick a platform ratio.
               </p>
             </div>
 
             <div className="space-y-6 px-6 py-6">
+              {/* Upload */}
               <div className="rounded-2xl border border-dashed border-cyan-400/30 bg-slate-900/60 p-5">
                 <label className="mb-3 block text-sm font-medium text-slate-200">
                   Upload long video
@@ -285,6 +378,7 @@ function App() {
                 )}
               </div>
 
+              {/* Sliders */}
               <div className="grid gap-5 md:grid-cols-2">
                 <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
                   <label className="mb-3 block text-sm font-medium text-slate-200">
@@ -341,12 +435,67 @@ function App() {
                 </div>
               </div>
 
+              {/* Aspect Ratio Selector */}
+              <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
+                <label className="mb-1 block text-sm font-medium text-slate-200">
+                  Output aspect ratio
+                </label>
+                <p className="mb-4 text-xs text-slate-400">
+                  Crops the video to fit the selected platform. Cropping requires
+                  re-encoding and takes longer than a plain cut.
+                </p>
+
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                  {RATIO_PRESETS.map((preset) => {
+                    const isActive = selectedRatio === preset.id;
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => setSelectedRatio(preset.id)}
+                        className={`flex flex-col items-center gap-2 rounded-xl border px-3 py-4 text-center transition ${
+                          isActive
+                            ? "border-cyan-400 bg-cyan-400/10 text-cyan-300"
+                            : "border-white/10 bg-slate-950/60 text-slate-300 hover:border-white/30 hover:bg-slate-800/60"
+                        }`}
+                      >
+                        <span
+                          className="flex items-center justify-center text-2xl leading-none"
+                          style={{
+                            width: 32,
+                            height: 32,
+                            fontSize:
+                              preset.id === "original"
+                                ? 22
+                                : preset.id === "9:16"
+                                ? 20
+                                : preset.id === "1:1"
+                                ? 22
+                                : preset.id === "4:5"
+                                ? 20
+                                : 20,
+                          }}
+                        >
+                          {preset.icon}
+                        </span>
+                        <span className="text-sm font-semibold leading-tight">
+                          {preset.label}
+                        </span>
+                        <span className="text-[10px] leading-tight text-slate-400">
+                          {preset.description}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+              </div>
+
               {errorMessage && (
                 <div className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
                   {errorMessage}
                 </div>
               )}
-
               <button
                 type="button"
                 onClick={handleGenerateShorts}
@@ -364,6 +513,7 @@ function App() {
             </div>
           </section>
 
+          {/* Right panel */}
           <aside className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl">
             <div className="border-b border-white/10 px-6 py-5">
               <h2 className="text-xl font-semibold text-white">Processing</h2>
@@ -380,7 +530,7 @@ function App() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
                   <p className="text-sm text-slate-400">Total shorts</p>
                   <p className="mt-2 text-3xl font-bold text-cyan-300">
@@ -394,6 +544,13 @@ function App() {
                     {secondsPerShort}s
                   </p>
                 </div>
+
+                <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
+                  <p className="text-sm text-slate-400">Ratio</p>
+                  <p className="mt-2 text-xl font-bold text-cyan-300">
+                    {selectedPreset?.label ?? "—"}
+                  </p>
+                </div>
               </div>
 
               <div className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-5">
@@ -404,6 +561,11 @@ function App() {
                 <p className="mt-2 text-sm text-slate-300">
                   Source duration: {formatSeconds(videoDuration)}
                 </p>
+                {selectedRatio !== "original" && (
+                  <p className="mt-1 text-sm text-amber-300">
+                    Platform: {selectedPreset?.description}
+                  </p>
+                )}
               </div>
 
               {isCutting && (
@@ -412,10 +574,14 @@ function App() {
                     <div className="h-10 w-10 animate-spin rounded-full border-4 border-cyan-300/20 border-t-cyan-300" />
                     <div>
                       <p className="text-sm font-semibold text-white">
-                        Cutting your video...
+                        {selectedRatio !== "original"
+                          ? "Cutting & cropping your video..."
+                          : "Cutting your video..."}
                       </p>
                       <p className="text-sm text-slate-300">
-                        Fast mode using stream copy
+                        {selectedRatio !== "original"
+                          ? `Re-encoding to ${selectedRatio} ratio`
+                          : "Fast mode using stream copy"}
                       </p>
                     </div>
                   </div>
@@ -449,6 +615,9 @@ function App() {
                         <p className="mt-1 text-xs text-slate-400">
                           Start: {formatSeconds(item.startTime)} · Duration:{" "}
                           {formatSeconds(item.duration)}
+                          {selectedRatio !== "original" && (
+                            <> · Ratio: {selectedRatio}</>
+                          )}
                         </p>
 
                         <video
