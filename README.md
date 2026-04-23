@@ -1,60 +1,62 @@
 <h1 align="center">
-  <img src="https://capsule-render.vercel.app/api?type=glitch&color=ff0000&height=200&section=header&text=AI%20Shorts%20Generator&fontSize=70&fontColor=ffffff" />
+  <img src="https://capsule-render.vercel.app/api?type=rect&color=0D1117&height=220&section=header&text=Black%20Banner%20Store&fontSize=75&fontColor=00E6FE&animation=twinkling" />
 </h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/AI-Powered-red?style=for-the-badge&logo=openai" />
-  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextjs" />
-  <img src="https://img.shields.io/badge/Video_Processing-FF0000?style=for-the-badge&logo=render" />
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
+  <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" />
+  <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" />
+</p>
+
+<p align="center">
+  <a href="https://black-banner.vercel.app" target="_blank">
+    <img src="https://img.shields.io/badge/LIVE_DEMO-00E6FE?style=for-the-badge&logo=vercel&logoColor=black" />
+  </a>
 </p>
 
 ---
 
-### 🤖 Intelligent Video Trimming
-Transform long-form content into viral-ready shorts in seconds. This AI-driven tool analyzes your footage and carves out the most engaging moments based on your specific duration and count preferences.
+### 📦 Premium E-Commerce Experience
+A sophisticated, dark-themed marketplace built for speed and aesthetics. This store bridges the gap between high-end design and robust backend management using **Supabase** and **React**.
 
-### ✨ Core Capabilities
-- 🧠 **AI-Driven Selection:** Automatically identifies high-impact segments from long videos.
-- ⏱️ **Precision Timing:** You define the exact duration for each short.
-- 🔢 **Batch Generation:** Select the "Shorts Count" and let the AI do the heavy lifting in one go.
-- ⚡ **High-Speed Rendering:** Optimized processing for quick turnaround.
+### ✨ Core Features
+- 🛒 **Smart Cart:** Persistent shopping experience with real-time state sync.
+- 🔐 **Secure Entry:** Full authentication suite via Supabase Auth (RLS enabled).
+- 🎨 **Modern UI:** Built with Tailwind CSS for a pixel-perfect dark mode.
+- ⚡ **Instant Sync:** Real-time product inventory and live data updates.
 
 ---
 
-### 🖥️ App Interface
+### 🎨 Project Showcase
 <div align="center">
-  <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHpueXp6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKMGpxxZ29VIs8w/giphy.gif" width="700" style="border: 2px solid #ff0000; border-radius: 10px;" />
-  <br>
-  <a href="https://short-video-ai-red.vercel.app"><b>🌐 View Live Demo</b></a>
+  <kbd>
+    <img width="100%" alt="Black Banner Store Preview" src="https://github.com/user-attachments/assets/e1b49ba8-b5e1-49f9-a346-6d79f99e0eda" style="border-radius: 10px; border: 1px solid #00E6FE;" />
+  </kbd>
 </div>
 
 ---
 
-### 🛠️ The Engine Under The Hood
+### 🛠️ Tech Stack & Architecture
 
-| Component | Technology | Role |
-| :--- | :--- | :--- |
-| **Framework** | Next.js / React | High-performance frontend & API routes |
-| **AI Processing** | OpenAI / Gemini | Analyzing transcript & key moments |
-| **Video Engine** | FFmpeg / Remotion | Precise cutting and frame manipulation |
-| **Styling** | Tailwind CSS | Sleek, dark-mode user interface |
-
----
-
-### 🚀 Usage Flow
-
-1. **Upload:** Drop your long-form video link or file.
-2. **Configure:** - Set **Duration** (e.g., 30s, 60s).
-   - Choose **Count** (e.g., 5 shorts).
-3. **Generate:** The AI scans for peak engagement and begins the extraction.
-4. **Download:** Export your viral-ready content.
+<table align="center">
+  <tr>
+    <td align="center"><b>Frontend</b></td>
+    <td align="center"><b>Backend</b></td>
+    <td align="center"><b>Deployment</b></td>
+  </tr>
+  <tr>
+    <td>React.js + Tailwind CSS</td>
+    <td>Supabase (PostgreSQL)</td>
+    <td>Vercel (CI/CD)</td>
+  </tr>
+</table>
 
 ---
 
-### 🔧 Installation
+### 🚀 Developer Setup
 
-```bash
-git clone [https://github.com/AshiqCode/short-video-ai-red.git](https://github.com/AshiqCode/short-video-ai-red.git)
-npm install
-# Add your AI API Keys to .env
-npm run dev
+1. **Clone the Repository**
+   ```bash
+   git clone [https://github.com/AshiqCode/black-Banner-Supabase.git](https://github.com/AshiqCode/black-Banner-Supabase.git)
+   cd black-Banner-Supabase
