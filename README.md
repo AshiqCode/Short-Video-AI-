@@ -32,9 +32,15 @@ Turn hours of footage into viral-ready content instantly. This AI-powered tool a
   <kbd>
     <img width="100%" alt="AI Shorts Generator Preview" src="https://github.com/user-attachments/assets/72623a62-da64-4830-8a1f-1cc4e6f016ac" style="border-radius: 10px; border: 1px solid #FF4D4D;" />
   </kbd>
-  <p><i>A sleek, high-performance interface for modern content creators.</i></p>
 </div>
 
+### 🎨 Project Preview
+
+<div>
+  <a href="https://short-video-ai-red.vercel.app" target="_blank">
+    https://short-video-ai-red.vercel.app
+  </a>
+</div>
 ---
 
 ### 🛠️ Technical Workflow
