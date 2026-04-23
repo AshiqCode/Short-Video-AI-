@@ -3,7 +3,6 @@
 </h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextjs&logoColor=white" />
   <img src="https://img.shields.io/badge/AI_Engine-FF4D4D?style=for-the-badge&logo=openai&logoColor=white" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
   <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" />
@@ -31,7 +30,7 @@ Turn hours of footage into viral-ready content instantly. This AI-powered tool a
 ### 🎨 Visual Preview
 <div align="center">
   <kbd>
-    <img width="100%" alt="AI Shorts Generator Preview" src="https://github.com/user-attachments/assets/e1b49ba8-b5e1-49f9-a346-6d79f99e0eda" style="border-radius: 10px; border: 1px solid #FF4D4D;" />
+    <img width="100%" alt="AI Shorts Generator Preview" src="https://github.com/user-attachments/assets/72623a62-da64-4830-8a1f-1cc4e6f016ac" style="border-radius: 10px; border: 1px solid #FF4D4D;" />
   </kbd>
   <p><i>A sleek, high-performance interface for modern content creators.</i></p>
 </div>
@@ -44,7 +43,7 @@ Turn hours of footage into viral-ready content instantly. This AI-powered tool a
 | :--- | :--- | :--- |
 | **Analysis** | AI / LLM Models | Finding key moments and timestamps |
 | **Processing** | Video Engine | Precision cutting and rendering |
-| **Interface** | Next.js + Tailwind | Seamless user configuration & preview |
+| **Interface** | Tailwind | Seamless user configuration & preview |
 | **Hosting** | Vercel | Global edge delivery and API scaling |
 
 ---
